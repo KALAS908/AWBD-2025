@@ -38,6 +38,7 @@ public class CategoryService {
 
     public List<CategoryResponseDto> getAllCategories() {
         return categoryRepository.findAll().stream()
+                .filter(category -> !category.isDeleted()) // Filter out soft-deleted categories
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
     }
@@ -59,7 +60,13 @@ public class CategoryService {
         if (!categoryRepository.existsById(id)) {
             throw new ResourceNotFoundException("Category not found with id: " + id);
         }
-        categoryRepository.deleteById(id);
+        //categoryRepository.deleteById(id);
+
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
+        category.setDeleted(true); // Soft delete
+        categoryRepository.save(category);
+
     }
 
     // Helper method to map Category to CategoryResponseDto

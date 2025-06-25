@@ -38,15 +38,18 @@ public class Product {
     @Column(name = "phone_model")
     private PhoneModel phoneModel;
 
+
+    private boolean isDeleted = false;
+
     @JsonIgnore
     @ManyToMany(mappedBy = "products")
-    private Set<Order> orders;
+    private Set<Order> orders = new java.util.HashSet<>();
 
     @ManyToOne
     @JoinColumn(name = "category_id")
-    private Category category;
+    private Category category = new Category();
 
     @JsonIgnore
     @OneToMany(mappedBy = "product")
-    private Set<Review> reviews;
+    private Set<Review> reviews = new java.util.HashSet<>();
 }

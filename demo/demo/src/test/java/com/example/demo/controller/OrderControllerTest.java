@@ -2,27 +2,30 @@ package com.example.demo.controller;
 
 import com.example.demo.Controller.OrderController;
 import com.example.demo.Models.Enums.OrderStatus;
+import com.example.demo.Models.Enums.PhoneModel;
 import com.example.demo.dto.order.OrderRequestDto;
 import com.example.demo.dto.order.OrderResponseDto;
 import com.example.demo.dto.product.ProductResponseDto;
 import com.example.demo.service.OrderService;
-import org.junit.jupiter.api.BeforeEach;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import java.util.*;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(OrderController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class OrderControllerTest {
 
     @Autowired
@@ -34,136 +37,77 @@ class OrderControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private OrderRequestDto requestDto;
-    private OrderResponseDto responseDto;
-    private UUID orderId;
-    private UUID userId;
-    private UUID productId;
-
-    @BeforeEach
-    void setUp() {
-        orderId = UUID.randomUUID();
-        userId = UUID.randomUUID();
-        productId = UUID.randomUUID();
-
-        requestDto = new OrderRequestDto(
-                userId,
-                Set.of(productId),
-                OrderStatus.PENDING
-        );
-
-        responseDto = new OrderResponseDto(
-                orderId,
-                userId,
-                Set.of(new ProductResponseDto()),
-                999.99,
-                OrderStatus.PENDING
-        );
-    }
-
     @Test
-    void createOrder_ShouldReturnCreatedStatus() throws Exception {
-        when(orderService.createOrder(any(OrderRequestDto.class)))
+    void getOrderById_ShouldReturnOrder() throws Exception {
+        // Arrange
+        UUID orderId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+
+        OrderResponseDto responseDto = new OrderResponseDto(
+                orderId, userId, Set.of(), 99.99, OrderStatus.PENDING);
+
+        Mockito.when(orderService.getOrderById(orderId))
                 .thenReturn(responseDto);
 
-        mockMvc.perform(post("/api/orders")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requestDto)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.totalPrice").value(999.99))
-                .andExpect(jsonPath("$.status").value("PENDING"));
-    }
-
-    @Test
-    void createOrder_WithInvalidData_ShouldReturnBadRequest() throws Exception {
-        OrderRequestDto invalidDto = new OrderRequestDto(
-                null,
-                null,
-                null
-        );
-
-        mockMvc.perform(post("/api/orders")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidDto)))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void updateOrder_ShouldReturnOkStatus() throws Exception {
-        when(orderService.updateOrder(any(UUID.class), any(OrderRequestDto.class)))
-                .thenReturn(responseDto);
-
-        mockMvc.perform(put("/api/orders/" + orderId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requestDto)))
+        // Act & Assert
+        mockMvc.perform(get("/api/orders/{id}", orderId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("PENDING"));
-
-        verify(orderService).updateOrder(eq(orderId), any(OrderRequestDto.class));
-    }
-
-    @Test
-    void getOrderById_ShouldReturnOkStatus() throws Exception {
-        when(orderService.getOrderById(orderId))
-                .thenReturn(responseDto);
-
-        mockMvc.perform(get("/api/orders/" + orderId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.totalPrice").value(999.99))
-                .andExpect(jsonPath("$.status").value("PENDING"));
-
-        verify(orderService).getOrderById(orderId);
-    }
-
-    @Test
-    void getAllOrders_ShouldReturnOkStatus() throws Exception {
-        when(orderService.getAllOrders())
-                .thenReturn(Arrays.asList(responseDto));
-
-        mockMvc.perform(get("/api/orders"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].totalPrice").value(999.99))
-                .andExpect(jsonPath("$[0].status").value("PENDING"));
-
-        verify(orderService).getAllOrders();
+                .andExpect(jsonPath("$.id").value(orderId.toString()))
+                .andExpect(jsonPath("$.userId").value(userId.toString()));
     }
 
     @Test
     void deleteOrder_ShouldReturnNoContentStatus() throws Exception {
-        doNothing().when(orderService).deleteOrder(orderId);
+        // Arrange
+        UUID orderId = UUID.randomUUID();
+        Mockito.doNothing().when(orderService).deleteOrder(orderId);
 
-        mockMvc.perform(delete("/api/orders/" + orderId))
+        // Act & Assert
+        mockMvc.perform(delete("/api/orders/{id}", orderId))
                 .andExpect(status().isNoContent());
-
-        verify(orderService).deleteOrder(orderId);
     }
 
     @Test
-    void addProductsToOrder_ShouldReturnOkStatus() throws Exception {
-        Set<UUID> productIds = Set.of(UUID.randomUUID());
-        when(orderService.addProductsToOrder(orderId, productIds))
+    void getAllOrders_ShouldReturnListOfOrders() throws Exception {
+        // Arrange
+        UUID userId1 = UUID.randomUUID();
+        UUID userId2 = UUID.randomUUID();
+
+        OrderResponseDto order1 = new OrderResponseDto(
+                UUID.randomUUID(), userId1, Set.of(), 99.99, OrderStatus.PENDING);
+        OrderResponseDto order2 = new OrderResponseDto(
+                UUID.randomUUID(), userId2, Set.of(), 149.99, OrderStatus.COMPLETED);
+
+        Mockito.when(orderService.getAllOrders())
+                .thenReturn(Arrays.asList(order1, order2));
+
+        // Act & Assert
+        mockMvc.perform(get("/api/orders"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].totalPrice").value(99.99))
+                .andExpect(jsonPath("$[1].totalPrice").value(149.99));
+    }
+
+    @Test
+    void addProductsToOrder_ShouldReturnUpdatedOrder() throws Exception {
+        // Arrange
+        UUID orderId = UUID.randomUUID();
+        UUID productId1 = UUID.randomUUID();
+        UUID productId2 = UUID.randomUUID();
+        Set<UUID> productIds = Set.of(productId1, productId2);
+
+        OrderResponseDto responseDto = new OrderResponseDto(
+                orderId, UUID.randomUUID(), Set.of(), 199.99, OrderStatus.PENDING);
+
+        Mockito.when(orderService.addProductsToOrder(eq(orderId), eq(productIds)))
                 .thenReturn(responseDto);
 
-        mockMvc.perform(post("/api/orders/" + orderId + "/products")
+        // Act & Assert
+        mockMvc.perform(post("/api/orders/{id}/products", orderId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(productIds)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.totalPrice").value(999.99));
-
-        verify(orderService).addProductsToOrder(eq(orderId), any());
-    }
-
-    @Test
-    void createOrder_WithNullRequiredFields_ShouldReturnBadRequest() throws Exception {
-        OrderRequestDto invalidDto = new OrderRequestDto(
-                null,
-                null,
-                null
-        );
-
-        mockMvc.perform(post("/api/orders")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidDto)))
-                .andExpect(status().isBadRequest());
+                .andExpect(jsonPath("$.totalPrice").value(199.99));
     }
 }

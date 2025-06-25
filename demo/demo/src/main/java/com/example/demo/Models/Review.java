@@ -34,5 +34,7 @@ public class Review {
     @Column(nullable = false)
     private Integer rating;
 
+    private boolean isDeleted = false;
+
     private String comment;
 }

@@ -26,6 +26,10 @@ public class Category {
 
     private String description;
 
+    private boolean isDeleted = false;
+
     @OneToMany(mappedBy = "category")
     private Set<Product> products;
+
+
 }

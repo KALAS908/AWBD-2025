@@ -16,6 +16,7 @@ public class UserMapper {
         dto.setAge(user.getAge());
         dto.setEmail(user.getEmail());
         dto.setPassword(user.getPassword());
+        dto.setAdmin(user.isAdmin());
         return dto;
     }
 
@@ -27,6 +28,7 @@ public class UserMapper {
         user.setAge(userDto.getAge());
         user.setEmail(userDto.getEmail());
         user.setPassword(userDto.getPassword());
+        user.setAdmin(false); // Default to false, can be set later
         return user;
     }
 

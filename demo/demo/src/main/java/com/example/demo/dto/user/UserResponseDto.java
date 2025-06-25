@@ -9,6 +9,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Data
 public class UserResponseDto {
     private UUID id;
     private String firstName;
@@ -17,4 +18,8 @@ public class UserResponseDto {
     private int age;
     private String email;
     private String password;
+    private String login;
+    private String token;
+    private String message;
+    private boolean isAdmin;
 }

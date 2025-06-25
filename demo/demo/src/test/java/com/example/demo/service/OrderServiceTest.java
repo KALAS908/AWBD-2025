@@ -12,19 +12,15 @@ import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.*;
 
 import java.util.*;
 
-import static org.hamcrest.Matchers.any;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
+
     @Mock
     private OrderRepository orderRepository;
 
@@ -37,59 +33,181 @@ class OrderServiceTest {
     @InjectMocks
     private OrderService orderService;
 
-    private UUID orderId;
-    private UUID userId;
-    private UUID productId;
-    private User user;
-    private Product product;
-    private Order order;
-    private OrderRequestDto requestDto;
+    @Captor
+    private ArgumentCaptor<Order> orderCaptor;
+
+    private User testUser;
+    private Product testProduct;
+    private Order testOrder;
 
     @BeforeEach
     void setUp() {
-        orderId = UUID.randomUUID();
-        userId = UUID.randomUUID();
-        productId = UUID.randomUUID();
+        MockitoAnnotations.openMocks(this);
 
-        user = new User();
-        user.setId(userId);
-        user.setFirstName("John");
+        testUser = new User();
+        testUser.setId(UUID.randomUUID());
+        testUser.setUserName("testuser");
 
-        product = new Product();
-        product.setId(productId);
-        product.setName("iPhone");
-        product.setPrice(999.99);
+        testProduct = new Product();
+        testProduct.setId(UUID.randomUUID());
+        testProduct.setName("Test Product");
+        testProduct.setPrice(99.99);
 
-        order = new Order();
-        order.setId(orderId);
-        order.setUser(user);
-        order.setProducts(new HashSet<>(Arrays.asList(product)));
-        order.setTotalPrice(999.99);
-        order.setStatus(OrderStatus.PENDING);
-
-        requestDto = new OrderRequestDto();
-        requestDto.setUserId(userId);
-        requestDto.setProductIds(Set.of(productId));
-        requestDto.setStatus(OrderStatus.PENDING);
+        testOrder = new Order();
+        testOrder.setId(UUID.randomUUID());
+        testOrder.setUser(testUser);
+        testOrder.setProducts(Set.of(testProduct));
+        testOrder.setStatus(OrderStatus.PENDING);
+        testOrder.setTotalPrice(99.99);
     }
-
 
     @Test
-    void getOrderById_WhenExists_ShouldReturnOrder() {
-        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+    void createOrder_ShouldReturnCreatedOrder() {
+        // Arrange
+        Set<UUID> productIds = Set.of(testProduct.getId());
+        OrderRequestDto requestDto = new OrderRequestDto();
+        requestDto.setUserId(testUser.getId());
+        requestDto.setProductIds(productIds);
 
-        OrderResponseDto result = orderService.getOrderById(orderId);
+        when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
+        when(productRepository.findById(testProduct.getId())).thenReturn(Optional.of(testProduct));
+        when(orderRepository.save(any(Order.class))).thenReturn(testOrder);
 
+        // Act
+        OrderResponseDto result = orderService.createOrder(requestDto);
+
+        // Assert
         assertNotNull(result);
-        assertEquals(orderId, result.getId());
-        assertEquals(999.99, result.getTotalPrice());
+        assertEquals(testOrder.getId(), result.getId());
+        assertEquals(testUser.getId(), result.getUserId());
+        assertEquals(99.99, result.getTotalPrice());
+        assertEquals(OrderStatus.PENDING, result.getStatus());
+        verify(orderRepository, times(1)).save(any(Order.class));
     }
 
-    private Product createProduct(double price) {
-        Product p = new Product();
-        p.setId(UUID.randomUUID());
-        p.setPrice(price);
-        return p;
+    @Test
+    void updateOrder_ShouldReturnUpdatedOrder() {
+        // Arrange
+        UUID orderId = testOrder.getId();
+        User newUser = new User();
+        newUser.setId(UUID.randomUUID());
+        newUser.setUserName("newuser");
+
+        OrderRequestDto requestDto = new OrderRequestDto();
+        requestDto.setUserId(newUser.getId());
+        requestDto.setStatus(OrderStatus.COMPLETED);
+
+        Order updatedOrder = new Order();
+        updatedOrder.setId(orderId);
+        updatedOrder.setUser(newUser);
+        updatedOrder.setProducts(testOrder.getProducts());
+        updatedOrder.setStatus(OrderStatus.COMPLETED);
+        updatedOrder.setTotalPrice(99.99);
+
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(testOrder));
+        when(userRepository.findById(newUser.getId())).thenReturn(Optional.of(newUser));
+        when(orderRepository.save(any(Order.class))).thenReturn(updatedOrder);
+
+        // Act
+        OrderResponseDto result = orderService.updateOrder(orderId, requestDto);
+
+        // Assert
+        assertEquals(newUser.getId(), result.getUserId());
+        assertEquals(OrderStatus.COMPLETED, result.getStatus());
+        verify(orderRepository, times(1)).save(orderCaptor.capture());
+        Order savedOrder = orderCaptor.getValue();
+        assertEquals(OrderStatus.COMPLETED, savedOrder.getStatus());
+        assertEquals(newUser.getId(), savedOrder.getUser().getId());
+    }
+
+    @Test
+    void updateOrder_ShouldThrowException_WhenOrderNotFound() {
+        // Arrange
+        UUID orderId = UUID.randomUUID();
+        OrderRequestDto requestDto = new OrderRequestDto();
+        requestDto.setUserId(testUser.getId());
+
+        when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class,
+                () -> orderService.updateOrder(orderId, requestDto));
+    }
+
+    @Test
+    void deleteOrder_ShouldCallRepository() {
+        // Arrange
+        UUID orderId = testOrder.getId();
+        when(orderRepository.existsById(orderId)).thenReturn(true);
+
+        // Act
+        orderService.deleteOrder(orderId);
+
+        // Assert
+        verify(orderRepository, times(1)).deleteById(orderId);
+    }
+
+    @Test
+    void deleteOrder_ShouldThrowException_WhenOrderNotFound() {
+        // Arrange
+        UUID orderId = UUID.randomUUID();
+        when(orderRepository.existsById(orderId)).thenReturn(false);
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class,
+                () -> orderService.deleteOrder(orderId));
+    }
+
+    @Test
+    void getAllOrders_ShouldReturnListOfOrders() {
+        // Arrange
+        Order order2 = new Order();
+        order2.setId(UUID.randomUUID());
+        order2.setUser(testUser);
+        order2.setProducts(Set.of(testProduct));
+        order2.setStatus(OrderStatus.COMPLETED);
+        order2.setTotalPrice(199.99);
+
+        when(orderRepository.findAll()).thenReturn(Arrays.asList(testOrder, order2));
+
+        // Act
+        List<OrderResponseDto> result = orderService.getAllOrders();
+
+        // Assert
+        assertEquals(2, result.size());
+        assertEquals(testOrder.getId(), result.get(0).getId());
+        assertEquals(order2.getId(), result.get(1).getId());
+        verify(orderRepository, times(1)).findAll();
+    }
+
+    @Test
+    void addProductsToOrder_ShouldReturnUpdatedOrder() {
+        // Arrange
+        UUID orderId = testOrder.getId();
+        Product newProduct = new Product();
+        newProduct.setId(UUID.randomUUID());
+        newProduct.setName("New Product");
+        newProduct.setPrice(50.0);
+
+        Set<UUID> productIds = Set.of(newProduct.getId());
+
+        Order updatedOrder = new Order();
+        updatedOrder.setId(orderId);
+        updatedOrder.setUser(testUser);
+        updatedOrder.setProducts(Set.of(testProduct, newProduct));
+        updatedOrder.setStatus(OrderStatus.PENDING);
+        updatedOrder.setTotalPrice(149.99);
+
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(testOrder));
+        when(productRepository.findById(newProduct.getId())).thenReturn(Optional.of(newProduct));
+        when(orderRepository.save(any(Order.class))).thenReturn(updatedOrder);
+
+        // Act
+        OrderResponseDto result = orderService.addProductsToOrder(orderId, productIds);
+
+        // Assert
+        assertEquals(149.99, result.getTotalPrice());
+        assertEquals(2, result.getProducts().size());
+        verify(orderRepository, times(1)).save(any(Order.class));
     }
 }
-

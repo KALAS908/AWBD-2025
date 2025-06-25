@@ -37,17 +37,20 @@ public class User {
     private String lastName;
 
     @NotNull(message = "User name cannot be null.")
-    @Column(name = "user_name")
+    @Column(name = "user_name", unique = true)
     private String userName;
 
     @Column(name = "age")
     private int age;
 
-    @Column(name = "email")
+    @Column(name = "email", unique = true)
     private String email;
 
     @Column(name = "password")
     private String password;
+
+    @Column(name = "isAdmin")
+    private boolean isAdmin;
 
     @JsonIgnore
     @OneToMany(mappedBy = "user")
@@ -61,6 +64,7 @@ public class User {
     @OneToMany(mappedBy = "user")
     private Set<Review> reviews;
 
+    private boolean isDeleted = false;
 
 
 }

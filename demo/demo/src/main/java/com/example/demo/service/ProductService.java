@@ -46,6 +46,7 @@ public class ProductService {
 
     public List<ProductResponseDto> getAllProducts() {
         return productRepository.findAll().stream()
+                .filter(product -> !product.isDeleted()) // Assuming you have a 'deleted' field in Product
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
     }
@@ -73,7 +74,11 @@ public class ProductService {
         if (!productRepository.existsById(id)) {
             throw new ResourceNotFoundException("Product not found with id: " + id);
         }
-        productRepository.deleteById(id);
+
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
+        product.setDeleted(true); // Assuming you have a 'deleted' field in Product
+        productRepository.save(product);
     }
 
     // Helper method to map Product to ProductResponseDto
@@ -84,9 +89,10 @@ public class ProductService {
                 product.getPrice(),
                 product.getPhoneModel(),
                 product.getCategory(),
+                product.getReviews() != null ?
                 product.getReviews().stream()
                         .map(this::mapReviewToDto)
-                        .collect(Collectors.toSet())
+                        .collect(Collectors.toSet()) : new java.util.HashSet<>()
         );
     }
 
