@@ -1,0 +1,64 @@
+<div style="max-width: 800px; margin: auto">
+  <nz-input-group nzSearch [nzSuffix]="suffixIcon">
+    <input
+      type="text"
+      nz-input
+      placeholder="Caută categorie..."
+      [(ngModel)]="searchValue"
+      (ngModelChange)="applyFilter()"
+      style="width: 300px; margin-bottom: 16px"
+    />
+    <ng-template #suffixIcon>
+      <i nz-icon nzType="search"></i>
+    </ng-template>
+  </nz-input-group>
+
+  <nz-table
+    #basicTable
+    [nzData]="pagedCategories"
+    [nzFrontPagination]="false"
+    [nzShowPagination]="false"
+    nzBordered
+  >
+    <thead>
+      <tr>
+        <th>Nume</th>
+        <th>Descriere</th>
+        <th style="width: 160px; text-align: center">Acțiuni</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let cat of pagedCategories">
+        <td>{{ cat.name }}</td>
+        <td>{{ cat.description }}</td>
+        <td style="text-align: center">
+          <button
+            nz-button
+            nzType="default"
+            nzSize="small"
+            (click)="onEdit(cat)"
+          >
+            <i nz-icon nzType="edit"></i> Edit
+          </button>
+          <button
+            nz-button
+            nzType="default"
+            nzDanger
+            nzSize="small"
+            (click)="onDelete(cat)"
+          >
+            <i nz-icon nzType="delete"></i> Delete
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </nz-table>
+
+  <nz-pagination
+    [nzPageIndex]="pageIndex"
+    [nzTotal]="filteredCategories.length"
+    [nzPageSize]="pageSize"
+    (nzPageIndexChange)="onPageIndexChange($event)"
+    style="margin-top: 16px; text-align: right"
+  ></nz-pagination>
+</div>

@@ -1,0 +1,61 @@
+<div style="max-width: 900px; margin: auto">
+  <nz-table
+    [nzData]="cartItems"
+    [nzFrontPagination]="false"
+    [nzShowPagination]="false"
+    nzBordered
+  >
+    <thead>
+      <tr>
+        <th>Nume</th>
+        <th>Preț</th>
+        <th>Model Telefon</th>
+        <th>Categorie</th>
+        <th>Cantitate</th>
+        <th style="width: 160px; text-align: center">Acțiuni</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of cartItems">
+        <td>{{ item.product.name }}</td>
+        <td>{{ item.product.price }}</td>
+        <td>{{ item.product.phoneModel }}</td>
+        <td>{{ item.product.category?.name }}</td>
+        <td>
+          <button
+            *ngIf="item.quantity > 1"
+            nz-button
+            nzType="default"
+            nzDanger
+            nzSize="small"
+            (click)="decrementQuantity(item)"
+          >
+            -
+          </button>
+          {{ item.quantity }}
+
+          <button
+            nz-button
+            nzType="default"
+            nzDanger
+            nzSize="small"
+            (click)="incrementQuantity(item)"
+          >
+            +
+          </button>
+        </td>
+        <td style="text-align: center">
+          <button
+            nz-button
+            nzType="default"
+            nzDanger
+            nzSize="small"
+            (click)="onDelete(item)"
+          >
+            <i nz-icon nzType="delete"></i> Delete
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </nz-table>
+</div>

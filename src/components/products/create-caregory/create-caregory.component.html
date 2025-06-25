@@ -1,0 +1,38 @@
+<form
+  nz-form
+  [formGroup]="categoryForm"
+  (ngSubmit)="submitForm()"
+  style="max-width: 400px; margin: auto"
+>
+  <nz-form-item>
+    <nz-form-label [nzFor]="'name'">Nume categorie</nz-form-label>
+    <nz-form-control nzErrorTip="Numele este obligatoriu!">
+      <input
+        nz-input
+        id="name"
+        formControlName="name"
+        placeholder="Nume categorie"
+      />
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-label [nzFor]="'description'">Descriere</nz-form-label>
+    <nz-form-control nzErrorTip="Descrierea este obligatorie!">
+      <textarea
+        nz-input
+        id="description"
+        formControlName="description"
+        placeholder="Descriere categorie"
+      ></textarea>
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-control>
+      <button nz-button nzType="primary" [disabled]="categoryForm.invalid">
+        Salvează
+      </button>
+    </nz-form-control>
+  </nz-form-item>
+</form>

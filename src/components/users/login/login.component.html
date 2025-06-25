@@ -1,0 +1,48 @@
+<form
+  nz-form
+  [formGroup]="loginForm"
+  class="login-form"
+  (ngSubmit)="submitForm()"
+>
+  <nz-form-item>
+    <nz-form-control nzErrorTip="Introduceți un email valid!">
+      <nz-input-group nzPrefixIcon="mail">
+        <input
+          type="email"
+          nz-input
+          formControlName="email"
+          placeholder="Email"
+        />
+      </nz-input-group>
+    </nz-form-control>
+  </nz-form-item>
+  <nz-form-item>
+    <nz-form-control nzErrorTip="Introduceți parola!">
+      <nz-input-group nzPrefixIcon="lock">
+        <input
+          type="password"
+          nz-input
+          formControlName="password"
+          placeholder="Parolă"
+        />
+      </nz-input-group>
+    </nz-form-control>
+  </nz-form-item>
+
+  <!-- <button
+    nz-button
+    class="login-form-button login-form-margin"
+    nzType="primary"
+    [disabled]="!loginForm.valid"
+  >
+    Login
+  </button> -->
+
+  <nz-form-item>
+    <nz-form-control>
+      <button nz-button nzType="primary" [disabled]="loginForm.invalid">
+        Login
+      </button>
+    </nz-form-control>
+  </nz-form-item>
+</form>

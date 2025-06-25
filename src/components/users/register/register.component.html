@@ -1,0 +1,93 @@
+<form
+  nz-form
+  [formGroup]="userForm"
+  (ngSubmit)="submitForm()"
+  nzLayout="vertical"
+  style="max-width: 400px; margin: auto"
+>
+  <h2>Înregistrare utilizator</h2>
+  <div *ngIf="this.message" class="error-message">
+    {{ message }}
+  </div>
+  <nz-form-item>
+    <nz-form-label [nzFor]="'prenume'">Prenume</nz-form-label>
+    <nz-form-control [nzErrorTip]="'Prenumele este obligatoriu'">
+      <input
+        nz-input
+        formControlName="prenume"
+        id="prenume"
+        placeholder="Prenume"
+      />
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-label [nzFor]="'nume'">Nume</nz-form-label>
+    <nz-form-control [nzErrorTip]="'Numele este obligatoriu'">
+      <input nz-input formControlName="nume" id="nume" placeholder="Nume" />
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-label [nzFor]="'username'">Nume utilizator</nz-form-label>
+    <nz-form-control [nzErrorTip]="'Numele de utilizator este obligatoriu'">
+      <input
+        nz-input
+        formControlName="username"
+        id="username"
+        placeholder="Nume utilizator"
+      />
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-label [nzFor]="'varsta'">Vârstă</nz-form-label>
+    <nz-form-control
+      [nzErrorTip]="'Vârsta este obligatorie și trebuie să fie pozitivă'"
+    >
+      <input
+        nz-input
+        formControlName="varsta"
+        id="varsta"
+        placeholder="Vârstă"
+        type="number"
+      />
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-label [nzFor]="'email'">Email</nz-form-label>
+    <nz-form-control [nzErrorTip]="'Email invalid'">
+      <input
+        nz-input
+        formControlName="email"
+        id="email"
+        placeholder="Email"
+        type="email"
+      />
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-label [nzFor]="'parola'">Parolă</nz-form-label>
+    <nz-form-control
+      [nzErrorTip]="'Parola este obligatorie (minim 6 caractere)'"
+    >
+      <input
+        nz-input
+        formControlName="parola"
+        id="parola"
+        placeholder="Parolă"
+        type="password"
+      />
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-control>
+      <button nz-button nzType="primary" [disabled]="userForm.invalid">
+        Înregistrează-te
+      </button>
+    </nz-form-control>
+  </nz-form-item>
+</form>

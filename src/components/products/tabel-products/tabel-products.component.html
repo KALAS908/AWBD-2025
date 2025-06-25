@@ -1,0 +1,74 @@
+<div style="max-width: 900px; margin: auto">
+  <nz-table
+    [nzData]="pagedProducts"
+    [nzFrontPagination]="false"
+    [nzShowPagination]="false"
+    nzBordered
+  >
+    <thead>
+      <tr>
+        <th>Nume</th>
+        <th>Preț</th>
+        <th>Model Telefon</th>
+        <th>Categorie</th>
+        <th style="width: 160px; text-align: center">Acțiuni</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let prod of pagedProducts">
+        <td>{{ prod.name }}</td>
+        <td>{{ prod.price }}</td>
+        <td>{{ prod.phoneModel }}</td>
+        <td>{{ prod.category.name }}</td>
+        <td style="text-align: center">
+          <button
+            *ngIf="this.isAdmin"
+            nz-button
+            nzType="default"
+            nzSize="small"
+            (click)="onEdit(prod)"
+          >
+            <i nz-icon nzType="edit"></i> Edit
+          </button>
+
+          <button
+            *ngIf="this.isAdmin"
+            nz-button
+            nzType="default"
+            nzSize="small"
+            (click)="onView(prod)"
+          >
+            <i nz-icon nzType="view"></i> View
+          </button>
+
+          <button
+            *ngIf="this.isAdmin"
+            nz-button
+            nzType="default"
+            nzDanger
+            nzSize="small"
+            (click)="onDelete(prod)"
+          >
+            <i nz-icon nzType="delete"></i> Delete
+          </button>
+          <button
+            nz-button
+            nzType="primary"
+            nzSize="small"
+            (click)="onBuy(prod)"
+          >
+            <i nz-icon nzType="shopping"></i> Buy
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </nz-table>
+
+  <nz-pagination
+    [nzPageIndex]="pageIndex"
+    [nzTotal]="products.length"
+    [nzPageSize]="pageSize"
+    (nzPageIndexChange)="onPageIndexChange($event)"
+    style="margin-top: 16px; text-align: right"
+  ></nz-pagination>
+</div>

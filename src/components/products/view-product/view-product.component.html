@@ -1,0 +1,44 @@
+<h2>Detalii produs</h2>
+<!-- Afișează aici detalii produs dacă vrei -->
+
+<h3>Comentarii</h3>
+
+<form
+  nz-form
+  [formGroup]="reviewForm"
+  (ngSubmit)="submitReview()"
+  style="max-width: 500px"
+>
+  <nz-form-item>
+    <nz-form-label>Rating</nz-form-label>
+    <nz-form-control>
+      <nz-rate formControlName="rating"></nz-rate>
+    </nz-form-control>
+  </nz-form-item>
+  <nz-form-item>
+    <nz-form-label>Comentariu</nz-form-label>
+    <nz-form-control nzErrorTip="Comentariul este obligatoriu!">
+      <textarea
+        nz-input
+        formControlName="comment"
+        rows="3"
+        placeholder="Scrie un comentariu..."
+      ></textarea>
+    </nz-form-control>
+  </nz-form-item>
+  <div *ngIf="errorMessage" style="color: #ff4d4f">{{ errorMessage }}</div>
+  <button
+    nz-button
+    nzType="primary"
+    [disabled]="submitting || reviewForm.invalid"
+  >
+    Trimite comentariu
+  </button>
+</form>
+
+<nz-comment *ngFor="let review of reviews">
+  <ng-container nz-comment-content>
+    <nz-rate [ngModel]="review.rating" nzDisabled></nz-rate>
+    <div>{{ review.comment }}</div>
+  </ng-container>
+</nz-comment>

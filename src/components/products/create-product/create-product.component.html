@@ -1,0 +1,75 @@
+<form
+  nz-form
+  [formGroup]="productForm"
+  (ngSubmit)="submitForm()"
+  style="max-width: 400px; margin: auto"
+>
+  <nz-form-item>
+    <nz-form-label [nzFor]="'name'">Nume produs</nz-form-label>
+    <nz-form-control nzErrorTip="Numele este obligatoriu!">
+      <input
+        nz-input
+        id="name"
+        formControlName="name"
+        placeholder="Nume produs"
+      />
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-label [nzFor]="'price'">Preț</nz-form-label>
+    <nz-form-control
+      nzErrorTip="Prețul este obligatoriu și trebuie să fie pozitiv!"
+    >
+      <input
+        nz-input
+        id="price"
+        formControlName="price"
+        type="number"
+        placeholder="Preț"
+      />
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-label [nzFor]="'phoneModel'">Model telefon</nz-form-label>
+    <nz-form-control nzErrorTip="Modelul este obligatoriu!">
+      <nz-select
+        id="phoneModel"
+        formControlName="phoneModel"
+        nzPlaceHolder="Selectează modelul"
+      >
+        <nz-option
+          *ngFor="let model of phoneModels"
+          [nzValue]="model"
+          [nzLabel]="model"
+        ></nz-option>
+      </nz-select>
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-label [nzFor]="'categoryId'">Categorie</nz-form-label>
+    <nz-form-control nzErrorTip="Categoria este obligatorie!">
+      <nz-select
+        id="categoryId"
+        formControlName="categoryId"
+        nzPlaceHolder="Selectează categoria"
+      >
+        <nz-option
+          *ngFor="let cat of categories"
+          [nzValue]="cat.id"
+          [nzLabel]="cat.name"
+        ></nz-option>
+      </nz-select>
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-control>
+      <button nz-button nzType="primary" [disabled]="productForm.invalid">
+        Salvează produsul
+      </button>
+    </nz-form-control>
+  </nz-form-item>
+</form>
